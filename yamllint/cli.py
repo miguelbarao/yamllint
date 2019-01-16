@@ -83,10 +83,39 @@ class Format(object):
         return line
 
 
+def show_problems(problems, file, args_format):
+    max_level = 0
+    first = True
+
+    for problem in problems:
+        if args_format == 'parsable':
+            print(Format.parsable(problem, file))
+        elif args_format == 'colored' or \
+                (args_format == 'auto' and supports_color()):
+            if first:
+                print('\033[4m%s\033[0m' % file)
+                first = False
+
+            print(Format.standard_color(problem, file))
+        else:
+            if first:
+                print(file)
+                first = False
+
+            print(Format.standard(problem, file))
+
+        max_level = max(max_level, PROBLEM_LEVELS[problem.level])
+
+    if not first and args_format != 'parsable':
+        print('')
+
+    return max_level
+
+
 def run(argv=None):
     parser = argparse.ArgumentParser(prog=APP_NAME,
                                      description=APP_DESCRIPTION)
-    parser.add_argument('files', metavar='FILE_OR_DIR', nargs='+',
+    parser.add_argument('files', metavar='FILE_OR_DIR', nargs='*',
                         help='files to check')
     config_group = parser.add_mutually_exclusive_group()
     config_group.add_argument('-c', '--config-file', dest='config_file',
@@ -104,8 +133,9 @@ def run(argv=None):
                              'as well as errors')
     parser.add_argument('-v', '--version', action='version',
                         version='{} {}'.format(APP_NAME, APP_VERSION))
-
-    # TODO: read from stdin when no filename?
+    parser.add_argument('--stdin',
+                        action='store_true',
+                        help='read from standard input')
 
     args = parser.parse_args(argv)
 
@@ -138,32 +168,25 @@ def run(argv=None):
     for file in find_files_recursively(args.files):
         filepath = file[2:] if file.startswith('./') else file
         try:
-            first = True
-            with open(file) as f:
-                for problem in linter.run(f, conf, filepath):
-                    if args.format == 'parsable':
-                        print(Format.parsable(problem, file))
-                    elif args.format == 'colored' or \
-                            (args.format == 'auto' and supports_color()):
-                        if first:
-                            print('\033[4m%s\033[0m' % file)
-                            first = False
+            f = open(file)
 
-                        print(Format.standard_color(problem, file))
-                    else:
-                        if first:
-                            print(file)
-                            first = False
-
-                        print(Format.standard(problem, file))
-
-                    max_level = max(max_level, PROBLEM_LEVELS[problem.level])
-
-            if not first and args.format != 'parsable':
-                print('')
         except EnvironmentError as e:
             print(e, file=sys.stderr)
             sys.exit(-1)
+
+        else:
+            with f:
+                problems = linter.run(f, conf, filepath)
+
+            probs_level = show_problems(problems, file, args_format=args.format)
+            max_level = max(max_level, probs_level)
+
+    # read yaml from stdin
+    if args.stdin:
+        problems = linter.run(sys.stdin, conf, '')
+        prob_level = show_problems(problems, 'stdin', args_format=args.format)
+        max_level = max(max_level, prob_level)
+
 
     if max_level == PROBLEM_LEVELS['error']:
         return_code = 1
