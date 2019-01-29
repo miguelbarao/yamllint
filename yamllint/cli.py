@@ -95,15 +95,12 @@ def show_problems(problems, file, args_format):
             if first:
                 print('\033[4m%s\033[0m' % file)
                 first = False
-
             print(Format.standard_color(problem, file))
         else:
             if first:
                 print(file)
                 first = False
-
             print(Format.standard(problem, file))
-
         max_level = max(max_level, PROBLEM_LEVELS[problem.level])
 
     if not first and args_format != 'parsable':
@@ -168,24 +165,20 @@ def run(argv=None):
         filepath = file[2:] if file.startswith('./') else file
         try:
             f = open(file)
-
         except EnvironmentError as e:
             print(e, file=sys.stderr)
             sys.exit(-1)
-
         else:
             with f:
                 problems = linter.run(f, conf, filepath)
-
-            probs_level = show_problems(problems, file, args_format=args.format)
-            max_level = max(max_level, probs_level)
+            prob_level = show_problems(problems, file, args_format=args.format)
+            max_level = max(max_level, prob_level)
 
     # read yaml from stdin
     if args.stdin:
         problems = linter.run(sys.stdin, conf, '')
         prob_level = show_problems(problems, 'stdin', args_format=args.format)
         max_level = max(max_level, prob_level)
-
 
     if max_level == PROBLEM_LEVELS['error']:
         return_code = 1

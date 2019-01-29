@@ -449,6 +449,7 @@ class CommandLineTestCase(unittest.TestCase):
         self.assertNotEqual(ctx.exception.code, 0)
 
         out, err = sys.stdout.getvalue(), sys.stderr.getvalue()
-        self.assertEqual(out, 'stdin:2:10: [error] syntax error: mapping '
-            'values are not allowed here\n')
+        self.assertEqual(out, (
+            'stdin:2:10: [error] syntax error: '
+            'mapping values are not allowed here\n'))
         self.assertEqual(err, '')
