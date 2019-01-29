@@ -133,8 +133,7 @@ def run(argv=None):
                              'as well as errors')
     parser.add_argument('-v', '--version', action='version',
                         version='{} {}'.format(APP_NAME, APP_VERSION))
-    parser.add_argument('--stdin',
-                        action='store_true',
+    parser.add_argument('-', '--stdin', action='store_true',
                         help='read from standard input')
 
     args = parser.parse_args(argv)
