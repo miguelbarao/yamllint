@@ -140,6 +140,17 @@ class CommandLineTestCase(unittest.TestCase):
             r'not allowed with argument -c\/--config-file$'
         )
 
+        # checks if reading from stdin and files are mutually exclusive
+        sys.stdout, sys.stderr = StringIO(), StringIO()
+        with self.assertRaises(SystemExit) as ctx:
+            cli.run(('-', 'file'))
+
+        self.assertNotEqual(ctx.exception.code, 0)
+
+        out, err = sys.stdout.getvalue(), sys.stderr.getvalue()
+        self.assertEqual(out, '')
+        self.assertRegexpMatches(err, r'^usage')
+
     def test_run_with_bad_config(self):
         sys.stdout, sys.stderr = StringIO(), StringIO()
         with self.assertRaises(SystemExit) as ctx:

@@ -112,8 +112,12 @@ def show_problems(problems, file, args_format):
 def run(argv=None):
     parser = argparse.ArgumentParser(prog=APP_NAME,
                                      description=APP_DESCRIPTION)
-    parser.add_argument('files', metavar='FILE_OR_DIR', nargs='*',
+    files_group = parser.add_mutually_exclusive_group(required=True)
+    files_group.add_argument('files', metavar='FILE_OR_DIR', nargs='*',
+                        default=(),
                         help='files to check')
+    files_group.add_argument('-', action='store_true', dest='stdin',
+                        help='read from standard input')
     config_group = parser.add_mutually_exclusive_group()
     config_group.add_argument('-c', '--config-file', dest='config_file',
                               action='store',
@@ -130,8 +134,6 @@ def run(argv=None):
                              'as well as errors')
     parser.add_argument('-v', '--version', action='version',
                         version='{} {}'.format(APP_NAME, APP_VERSION))
-    parser.add_argument('-', action='store_true', dest='stdin',
-                        help='read from standard input')
 
     args = parser.parse_args(argv)
 
