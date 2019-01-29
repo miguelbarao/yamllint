@@ -114,10 +114,10 @@ def run(argv=None):
                                      description=APP_DESCRIPTION)
     files_group = parser.add_mutually_exclusive_group(required=True)
     files_group.add_argument('files', metavar='FILE_OR_DIR', nargs='*',
-                        default=(),
-                        help='files to check')
+                             default=(),
+                             help='files to check')
     files_group.add_argument('-', action='store_true', dest='stdin',
-                        help='read from standard input')
+                             help='read from standard input')
     config_group = parser.add_mutually_exclusive_group()
     config_group.add_argument('-c', '--config-file', dest='config_file',
                               action='store',
